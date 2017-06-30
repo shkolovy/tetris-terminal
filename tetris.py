@@ -100,18 +100,23 @@ def init_screen():
 
 
 def init_colors():
-    # grey for dots
+    """Init colors"""
+
     curses.init_pair(99, 8, curses.COLOR_BLACK)
     curses.init_pair(98, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(97, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(96, curses.COLOR_BLACK, curses.COLOR_CYAN)
 
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_GREEN)
+    curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
 
 
 def init_game_window():
+    """Create and return game window"""
+
     window = curses.newwin(GAME_WINDOW_HEIGHT, GAME_WINDOW_WIDTH, TITLE_HEIGHT, 3)
     # window.nodelay(True)
     window.keypad(1)
@@ -120,18 +125,23 @@ def init_game_window():
 
 
 def init_help_window():
+    """Create and return help window"""
+
     window = curses.newwin(HELP_WINDOW_HEIGHT, HELP_WINDOW_WIDTH, TITLE_HEIGHT + STATUS_WINDOW_HEIGHT + 1,
                            GAME_WINDOW_WIDTH + 5)
     return window
 
 
 def init_status_window():
+    """Create and return status window"""
+
     window = curses.newwin(STATUS_WINDOW_HEIGHT, STATUS_WINDOW_WIDTH, TITLE_HEIGHT, GAME_WINDOW_WIDTH + 5)
     return window
 
 
 def draw_game_window(window):
-    window.clear()
+    """Draw game widnow"""
+
     window.border()
 
     # draw dots
@@ -143,7 +153,10 @@ def draw_game_window(window):
     for a in range(BOARD_HEIGHT):
         for b in range(BOARD_WIDTH):
             if board.board[a][b] == 1:
-                window.addstr(a + 1, 2 * b + 1, "  ", curses.color_pair(1))
+                window.addstr(a + 1, 2 * b + 1, "  ", curses.color_pair(96))
+            else:
+                # hack: to avoid clearing
+                window.addstr(a + 1, 2 * b + 1, "  ")
 
     # draw current block
     for a in range(board.current_block.size[0]):
@@ -151,16 +164,21 @@ def draw_game_window(window):
             if board.current_block.shape[a][b] == 1:
                 x = 2 * board.current_block_pos[1] + 2 * b + 1
                 y = board.current_block_pos[0] + a + 1
-                window.addstr(y, x, "  ", curses.color_pair(1))
+                window.addstr(y, x, "  ", curses.color_pair(board.current_block.color))
 
     window.refresh()
 
 
 def draw_status_window(window):
-    window.clear()
+    """Draw status window"""
+
+    # hack: avoid clearing (blinking)
+    for row in range(1, STATUS_WINDOW_HEIGHT - 1):
+        window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
+
     window.border()
 
-    score = 200
+    score = random.randint(1, 3000)
 
     window.addstr(1, 2, f"Score: {score}")
     window.addstr(2, 2, "Next block:")
@@ -170,26 +188,30 @@ def draw_status_window(window):
     for row in range(board.next_block.size[0]):
         for col in range(board.next_block.size[1]):
             if board.next_block.shape[row][col] == 1:
-                window.addstr(4 + row, start_col + 2 * col, "  ", curses.color_pair(1))
+                window.addstr(4 + row, start_col + 2 * col, "  ", curses.color_pair(board.next_block.color))
 
     window.refresh()
 
 
 def draw_help_window(window):
+    """Draw help window"""
+
     window.border()
     title = "Controls"
     window.addstr(0, int(HELP_WINDOW_WIDTH / 2 - len(title) / 2), title)
 
-    window.addstr(2, 2, "Move   - ← ↓ →")
-    window.addstr(3, 2, "Drop   - space")
-    window.addstr(4, 2, "Rotate - ↑")
-    window.addstr(5, 2, "Pause  - p")
-    window.addstr(6, 2, "Quit   - q")
+    window.addstr(1, 2, "Move   - ← ↓ →")
+    window.addstr(2, 2, "Drop   - space")
+    window.addstr(3, 2, "Rotate - ↑")
+    window.addstr(4, 2, "Pause  - p")
+    window.addstr(5, 2, "Quit   - q")
 
     window.refresh()
 
 
 def draw_title():
+    """Draw title"""
+
     window = curses.newwin(TITLE_HEIGHT, 50, 1, 3)
     window.addstr(0, 4, "#####  ####  #####  ###    #   ####", curses.color_pair(98))
     window.addstr(1, 4, "  #    #       #    #  #      #", curses.color_pair(98))
@@ -211,7 +233,7 @@ def draw_footer():
     window.refresh()
 
 
-block_types = [
+block_shapes = [
     # t block
     [[0, 1, 0],
      [1, 1, 1]],
@@ -231,6 +253,8 @@ block_types = [
 
 
 class Board:
+    """Board representation"""
+
     def __init__(self, height, width):
         self.height = height
         self.width = width
@@ -240,16 +264,14 @@ class Board:
         self.current_block = None
         self.next_block = None
 
-    def get_board(self):
-        return self.board
-
-    def print_current_block(self):
-        self.current_block.print()
-
     def start(self):
+        """Start game"""
+
         self.place_new_block()
 
     def place_new_block(self):
+        """Place new block and generate the next one"""
+
         if self.next_block is None:
             self.current_block = self._generate_block()
             self.next_block = self._generate_block()
@@ -257,19 +279,25 @@ class Board:
             self.current_block = self.next_block
             self.next_block = self._generate_block()
 
-        col_pos = math.ceil(self.width / 2 - self.current_block.size[1] / 2)
+        col_pos = math.ceil((self.width - self.current_block.size[1]) / 2)
         self.current_block_pos = [0, col_pos]
 
-    def land_block(self, to_pos):
+    def _land_block(self):
+        """Put block to the board and generate a new one"""
+
         for row in range(self.current_block.size[0]):
             for col in range(self.current_block.size[1]):
                 if self.current_block.shape[row][col] == 1:
-                    self.board[to_pos[0] + row][to_pos[1] + col] = 1
+                    self.board[self.current_block_pos[0] + row][self.current_block_pos[1] + col] = 1
 
         self.place_new_block()
+
+    def check_game_over(self):
         pass
 
     def move_block(self, direction):
+        """Try to move block"""
+
         pos = self.current_block_pos
         if direction == "left":
             new_pos = [pos[0], pos[1] - 1]
@@ -280,42 +308,64 @@ class Board:
         else:
             raise ValueError("wrong directions")
 
-        if self.can_move(new_pos):
+        if self._can_move(new_pos):
             self.current_block_pos = new_pos
         elif direction == "down":
-            self.land_block(pos)
-            self.burn_line()
+            self._land_block()
+            self._burn()
 
-    def burn_line(self):
-        pass
+    def drop(self):
+        """Move to very very bottom"""
 
-    def can_move(self, to_pos):
+        i = 1
+        while self._can_move((self.current_block_pos[0]+1, self.current_block_pos[1])):
+            i += 1
+            self.move_block("down")
+
+        self._land_block()
+        self._burn()
+
+    def _burn(self):
+        """Remove matched lines"""
+
+        for row in range(BOARD_HEIGHT):
+            if sum(self.board[row]) == BOARD_WIDTH:
+                for r in range(row, 0, -1):
+                    self.board[r] = self.board[r-1]
+
+    def _can_move(self, to_pos):
+        """Check if move is possible"""
+
         if to_pos[1] < 0 or to_pos[1] + self.current_block.size[1] > BOARD_WIDTH \
                 or to_pos[0] + self.current_block.size[0] > BOARD_HEIGHT:
             return False
-
-        result = True
 
         for row in range(self.current_block.size[0]):
             for col in range(self.current_block.size[1]):
                 if self.current_block.shape[row][col] == 1:
                     if self.board[to_pos[0] + row][to_pos[1] + col] == 1:
-                        result = False
-                        break
-        return result
+                        return False
+        return True
 
     @staticmethod
     def _generate_block():
-        block_type = random.randint(1, len(block_types) - 1)
+        """Get random block"""
+
+        block_type = random.randint(0, len(block_shapes) - 1)
         return Block(block_type)
 
     def rotate_block(self):
+        """Rotate block"""
+
         self.current_block.rotate()
 
 
 class Block:
+    """Block representation"""
+
     def __init__(self, block_type):
-        self.shape = block_types[block_type]
+        self.shape = block_shapes[block_type]
+        self.color = block_type + 1
         self.size = self._get_size()
 
     def rotate(self):
@@ -328,7 +378,7 @@ class Block:
         return [len(self.shape), len(self.shape[0])]
 
 
-board = Board(BOARD_HEIGHT, BOARD_WIDTH)
+board = Board(BOARD_HEIGHT, BOARD_WIDTH, )
 board.start()
 
 if __name__ == "__main__":
@@ -357,19 +407,14 @@ if __name__ == "__main__":
 
             if key_event == curses.KEY_UP:
                 board.current_block.rotate()
-                pass
             elif key_event == curses.KEY_DOWN:
                 board.move_block("down")
-                pass
             elif key_event == curses.KEY_LEFT:
                 board.move_block("left")
-                pass
             elif key_event == curses.KEY_RIGHT:
                 board.move_block("right")
-                pass
             elif key_event == ord(" "):
-                # y = 8
-                pass
+                board.drop()
             elif key_event == ord("q"):
                 quit_game = True
             elif key_event == ord("p"):
