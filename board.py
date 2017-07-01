@@ -125,6 +125,12 @@ class Board:
 
         return self.game_over
 
+    def rotate_block(self):
+        rotated_shape = list(map(list, zip(*self.current_block.shape[::-1])))
+
+        if self._can_move(self.current_block_pos, rotated_shape):
+            self.current_block.shape = rotated_shape
+
     def move_block(self, direction):
         """Try to move block"""
 
@@ -138,7 +144,7 @@ class Board:
         else:
             raise ValueError("wrong directions")
 
-        if self._can_move(new_pos):
+        if self._can_move(new_pos, self.current_block.shape):
             self.current_block_pos = new_pos
         elif direction == "down":
             self._land_block()
@@ -149,7 +155,7 @@ class Board:
         """Move to very very bottom"""
 
         i = 1
-        while self._can_move((self.current_block_pos[0] + 1, self.current_block_pos[1])):
+        while self._can_move((self.current_block_pos[0] + 1, self.current_block_pos[1]), self.current_block.shape):
             i += 1
             self.move_block("down")
 
@@ -172,10 +178,11 @@ class Board:
             self.current_block = self.next_block
             self.next_block = self._get_new_block()
 
-        col_pos = math.floor((self.width - self.current_block.size[1]) / 2)
+        size = Block.get_size(self.current_block.shape)
+        col_pos = math.floor((self.width - size[1]) / 2)
         self.current_block_pos = [0, col_pos]
 
-        if self._check_overlapping(self.current_block_pos):
+        if self._check_overlapping(self.current_block_pos, self.current_block.shape):
             self.game_over = True
             self._save_best_score()
         else:
@@ -184,8 +191,9 @@ class Board:
     def _land_block(self):
         """Put block to the board and generate a new one"""
 
-        for row in range(self.current_block.size[0]):
-            for col in range(self.current_block.size[1]):
+        size = Block.get_size(self.current_block.shape)
+        for row in range(size[0]):
+            for col in range(size[1]):
                 if self.current_block.shape[row][col] == 1:
                     self.board[self.current_block_pos[0] + row][self.current_block_pos[1] + col] = 1
 
@@ -202,24 +210,26 @@ class Board:
                 if self.lines % 10 == 0:
                     self.level += 1
 
-    def _check_overlapping(self, pos):
+    def _check_overlapping(self, pos, shape):
         """If current block overlaps any other on the board"""
 
-        for row in range(self.current_block.size[0]):
-            for col in range(self.current_block.size[1]):
-                if self.current_block.shape[row][col] == 1:
+        size = Block.get_size(shape)
+        for row in range(size[0]):
+            for col in range(size[1]):
+                if shape[row][col] == 1:
                     if self.board[pos[0] + row][pos[1] + col] == 1:
                         return True
         return False
 
-    def _can_move(self, pos):
+    def _can_move(self, pos, shape):
         """Check if move is possible"""
 
-        if pos[1] < 0 or pos[1] + self.current_block.size[1] > self.width \
-                or pos[0] + self.current_block.size[0] > self.height:
+        size = Block.get_size(shape)
+        if pos[1] < 0 or pos[1] + size[1] > self.width \
+                or pos[0] + size[0] > self.height:
             return False
 
-        return not self._check_overlapping(pos)
+        return not self._check_overlapping(pos, shape)
 
     def _save_best_score(self):
         """Save best score to file"""
@@ -241,7 +251,13 @@ class Board:
     def _get_new_block():
         """Get random block"""
 
-        return Block(random.randint(0, len(block_shapes) - 1))
+        block = Block(random.randint(0, len(block_shapes) - 1))
+
+        # flip it randomly
+        if random.getrandbits(1):
+            block.flip()
+
+        return block
 
 
 class Block:
@@ -250,15 +266,20 @@ class Block:
     def __init__(self, block_type):
         self.shape = block_shapes[block_type]
         self.color = block_type + 1
-        self.size = self._get_size()
 
-    def rotate(self):
-        """Every time rotate clockwise 90"""
+    def flip(self):
+        self.shape = list(map(list, self.shape[::-1]))
 
-        self.shape = list(map(list, zip(*self.shape[::-1])))
-        self.size = self._get_size()
+    def _get_rotated(self):
+        return list(map(list, zip(*self.shape[::-1])))
 
-    def _get_size(self):
-        """Get size of block"""
+    def size(self):
+        """Get size of the block"""
 
-        return [len(self.shape), len(self.shape[0])]
+        return self.get_size(self.shape)
+
+    @staticmethod
+    def get_size(shape):
+        """Get size of a shape"""
+
+        return [len(shape), len(shape[0])]

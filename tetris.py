@@ -78,8 +78,8 @@ def draw_game_window(window):
                 window.addstr(a + 1, 2 * b + 1, " .", curses.color_pair(99))
 
     # draw current block
-    for a in range(game_board.current_block.size[0]):
-        for b in range(game_board.current_block.size[1]):
+    for a in range(game_board.current_block.size()[0]):
+        for b in range(game_board.current_block.size()[1]):
             if game_board.current_block.shape[a][b] == 1:
                 x = 2 * game_board.current_block_pos[1] + 2 * b + 1
                 y = game_board.current_block_pos[0] + a + 1
@@ -111,16 +111,16 @@ def draw_status_window(window):
         window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
 
     window.border()
-
-    window.addstr(1, 2, f"Score: {game_board.score}")
+    import random
+    window.addstr(1, 2, f"Score: {game_board.score} {random.randint(1,10)}")
     window.addstr(2, 2, f"Lines: {game_board.lines}")
     window.addstr(3, 2, f"Level: {game_board.level}")
     window.addstr(4, 2, f"Best Score:{game_board.best_score}")
 
-    start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
+    start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size()[1])
 
-    for row in range(game_board.next_block.size[0]):
-        for col in range(game_board.next_block.size[1]):
+    for row in range(game_board.next_block.size()[0]):
+        for col in range(game_board.next_block.size()[1]):
             if game_board.next_block.shape[row][col] == 1:
                 window.addstr(6 + row, start_col + 2 * col, "  ", curses.color_pair(game_board.next_block.color))
 
@@ -170,11 +170,12 @@ def draw_footer():
 
     window.refresh()
 
-
 pause = False
 
 game_board = board.Board(BOARD_HEIGHT, BOARD_WIDTH)
 game_board.start()
+
+old_score = game_board.score
 
 if __name__ == "__main__":
     try:
@@ -195,11 +196,11 @@ if __name__ == "__main__":
         status_window = init_status_window()
 
         draw_game_window(game_window)
+        draw_status_window(status_window)
 
         start = time.time()
 
         quit_game = False
-
         while not quit_game:
             key_event = game_window.getch()
 
@@ -213,7 +214,7 @@ if __name__ == "__main__":
                         start = time.time()
 
                     if key_event == curses.KEY_UP:
-                        game_board.current_block.rotate()
+                        game_board.rotate_block()
                     elif key_event == curses.KEY_DOWN:
                         game_board.move_block("down")
                     elif key_event == curses.KEY_LEFT:
@@ -233,6 +234,9 @@ if __name__ == "__main__":
                     game_window.nodelay(True)
 
             draw_game_window(game_window)
-            draw_status_window(status_window)
+
+            if old_score != game_board.score:
+                draw_status_window(status_window)
+                old_score = game_board.score
     finally:
         curses.endwin()
