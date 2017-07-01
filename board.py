@@ -158,6 +158,8 @@ class Board:
         self._place_new_block()
 
     def _get_new_board(self):
+        """Create new empty board"""
+
         return [[0 for _ in range(self.width)] for _ in range(self.height)]
 
     def _place_new_block(self):
@@ -257,4 +259,6 @@ class Block:
         self.size = self._get_size()
 
     def _get_size(self):
+        """Get size of block"""
+
         return [len(self.shape), len(self.shape[0])]

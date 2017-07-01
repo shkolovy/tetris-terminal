@@ -92,6 +92,11 @@ def draw_game_window(window):
         window.addstr(int(GAME_WINDOW_HEIGHT*.4), (GAME_WINDOW_WIDTH-len(go_title))//2, go_title, curses.color_pair(95))
         window.addstr(int(GAME_WINDOW_HEIGHT*.5), (GAME_WINDOW_WIDTH-len(ag_title))//2, ag_title, curses.color_pair(95))
 
+    if pause:
+        p_title = " Pause "
+        window.addstr(int(GAME_WINDOW_HEIGHT * .4), (GAME_WINDOW_WIDTH - len(p_title)) // 2, p_title,
+                      curses.color_pair(95))
+
     window.refresh()
 
 
@@ -121,6 +126,7 @@ def draw_status_window(window):
 
     window.refresh()
     pass
+
 
 def draw_help_window():
     """Draw help window"""
@@ -165,6 +171,8 @@ def draw_footer():
     window.refresh()
 
 
+pause = False
+
 game_board = board.Board(BOARD_HEIGHT, BOARD_WIDTH)
 game_board.start()
 
@@ -199,22 +207,24 @@ if __name__ == "__main__":
                 quit_game = True
 
             if not game_board.is_game_over():
-                if time.time() - start >= 1 / game_board.level:
-                    game_board.move_block("down")
-                    start = time.time()
+                if not pause:
+                    if time.time() - start >= 1 / game_board.level:
+                        game_board.move_block("down")
+                        start = time.time()
 
-                if key_event == curses.KEY_UP:
-                    game_board.current_block.rotate()
-                elif key_event == curses.KEY_DOWN:
-                    game_board.move_block("down")
-                elif key_event == curses.KEY_LEFT:
-                    game_board.move_block("left")
-                elif key_event == curses.KEY_RIGHT:
-                    game_board.move_block("right")
-                elif key_event == ord(" "):
-                    game_board.drop()
-                elif key_event == ord("p"):
-                    pass
+                    if key_event == curses.KEY_UP:
+                        game_board.current_block.rotate()
+                    elif key_event == curses.KEY_DOWN:
+                        game_board.move_block("down")
+                    elif key_event == curses.KEY_LEFT:
+                        game_board.move_block("left")
+                    elif key_event == curses.KEY_RIGHT:
+                        game_board.move_block("right")
+                    elif key_event == ord(" "):
+                        game_board.drop()
+                if key_event == ord("p"):
+                    pause = not pause
+                    game_window.nodelay(not pause)
             else:
                 curses.beep()
                 game_window.nodelay(False)
