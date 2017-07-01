@@ -9,8 +9,9 @@
 
 import curses
 import board
+import time
 
-BOARD_WIDTH = 10
+BOARD_WIDTH = 11
 BOARD_HEIGHT = 17
 
 GAME_WINDOW_WIDTH = 2 * BOARD_WIDTH + 2
@@ -49,17 +50,9 @@ def init_game_window():
     """Create and return game window"""
 
     window = curses.newwin(GAME_WINDOW_HEIGHT, GAME_WINDOW_WIDTH, TITLE_HEIGHT, LEFT_MARGIN)
-    # window.nodelay(True)
+    window.nodelay(True)
     window.keypad(1)
 
-    return window
-
-
-def init_help_window():
-    """Create and return help window"""
-
-    window = curses.newwin(HELP_WINDOW_HEIGHT, HELP_WINDOW_WIDTH, TITLE_HEIGHT + STATUS_WINDOW_HEIGHT,
-                           GAME_WINDOW_WIDTH + 5)
     return window
 
 
@@ -105,32 +98,35 @@ def draw_game_window(window):
 def draw_status_window(window):
     """Draw status window"""
 
-    if game_board.is_game_over():
-        return
+    # if game_board.is_game_over():
+    #     return
+    #
+    # # hack: avoid clearing (blinking)
+    # for row in range(1, STATUS_WINDOW_HEIGHT - 1):
+    #     window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
+    #
+    # window.border()
+    #
+    # window.addstr(1, 2, f"Score: {game_board.score}")
+    # window.addstr(2, 2, f"Lines: {game_board.lines}")
+    # window.addstr(3, 2, f"Level: {game_board.level}")
+    # window.addstr(4, 2, f"Best Score:{game_board.best_score}")
+    #
+    # start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
+    #
+    # for row in range(game_board.next_block.size[0]):
+    #     for col in range(game_board.next_block.size[1]):
+    #         if game_board.next_block.shape[row][col] == 1:
+    #             window.addstr(6 + row, start_col + 2 * col, "  ", curses.color_pair(game_board.next_block.color))
 
-    # hack: avoid clearing (blinking)
-    for row in range(1, STATUS_WINDOW_HEIGHT - 1):
-        window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
+    # window.refresh()
+    pass
 
-    window.border()
-
-    window.addstr(1, 2, f"Score: {game_board.score}")
-    window.addstr(2, 2, f"Lines: {game_board.lines}")
-    window.addstr(3, 2, f"Level: {game_board.level}")
-    window.addstr(4, 2, f"Best Score:{game_board.best_score}")
-
-    start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
-
-    for row in range(game_board.next_block.size[0]):
-        for col in range(game_board.next_block.size[1]):
-            if game_board.next_block.shape[row][col] == 1:
-                window.addstr(6 + row, start_col + 2 * col, "  ", curses.color_pair(game_board.next_block.color))
-
-    window.refresh()
-
-
-def draw_help_window(window):
+def draw_help_window():
     """Draw help window"""
+
+    window = curses.newwin(HELP_WINDOW_HEIGHT, HELP_WINDOW_WIDTH, TITLE_HEIGHT + STATUS_WINDOW_HEIGHT,
+                           GAME_WINDOW_WIDTH + 5)
 
     window.border()
 
@@ -185,13 +181,14 @@ if __name__ == "__main__":
 
         draw_title()
         draw_footer()
+        draw_help_window()
 
         game_window = init_game_window()
-        help_window = init_help_window()
         status_window = init_status_window()
 
         draw_game_window(game_window)
-        draw_help_window(help_window)
+
+        start = time.time()
 
         quit_game = False
 
@@ -204,6 +201,10 @@ if __name__ == "__main__":
                 quit_game = True
 
             if not game_board.is_game_over():
+                if time.time() - start >= 1 / game_board.level:
+                    game_board.move_block("down")
+                    start = time.time()
+
                 if key_event == curses.KEY_UP:
                     game_board.current_block.rotate()
                 elif key_event == curses.KEY_DOWN:
@@ -218,8 +219,10 @@ if __name__ == "__main__":
                     pass
             else:
                 curses.beep()
+                game_window.nodelay(False)
                 if key_event == ord("\n"):
                     game_board.start()
+                    game_window.nodelay(True)
 
             draw_game_window(game_window)
 

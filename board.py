@@ -95,10 +95,10 @@ class Board:
         self.next_block = None
 
         self.game_over = False
-        self.score = 0
-        self.lines = 0
-        self.best_score = self._get_best_score()
-        self.level = 1
+        self.score = None
+        self.lines = None
+        self.best_score = None
+        self.level = None
 
     def start(self):
         """Start game"""
@@ -113,6 +113,8 @@ class Board:
         self.score = 0
         self.lines = 0
         self.level = 1
+        self.best_score = self._get_best_score()
+
         self._place_new_block()
 
     def _save_best_score(self):
