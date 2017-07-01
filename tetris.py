@@ -32,14 +32,14 @@ TITLE_WIDTH = FOOTER_WIDTH = 50
 def init_colors():
     """Init colors"""
 
-    curses.init_pair(99, 8, curses.COLOR_BLACK)
+    curses.init_pair(99, 8, curses.COLOR_BLACK) # 1 - grey
     curses.init_pair(98, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(97, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(96, curses.COLOR_BLACK, curses.COLOR_CYAN)
     curses.init_pair(95, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
+    curses.init_pair(2, curses.COLOR_BLACK, 13) # 13 - pink
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
@@ -81,7 +81,7 @@ def draw_game_window(window):
             if game_board.board[a][b] == 1:
                 window.addstr(a + 1, 2 * b + 1, "  ", curses.color_pair(96))
             else:
-                # hack: to avoid clearing
+                # draw net
                 window.addstr(a + 1, 2 * b + 1, " .", curses.color_pair(99))
 
     # draw current block
@@ -114,10 +114,10 @@ def draw_status_window(window):
 
     window.border()
 
-    window.addstr(1, 2, f"Score: {200}")
-    window.addstr(2, 2, "Lines: 300")
-    window.addstr(3, 2, "Speed: 2")
-    window.addstr(4, 2, "Best Score: 2000")
+    window.addstr(1, 2, f"Score: {game_board.score}")
+    window.addstr(2, 2, f"Lines: {game_board.lines}")
+    window.addstr(3, 2, f"Level: {game_board.level}")
+    window.addstr(4, 2, f"Best Score:{game_board.best_score}")
 
     start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
 
@@ -134,11 +134,11 @@ def draw_help_window(window):
 
     window.border()
 
-    window.addstr(1, 2, "Move   - ← ↓ →")
-    window.addstr(2, 2, "Drop   - space")
-    window.addstr(3, 2, "Rotate - ↑")
-    window.addstr(4, 2, "Pause  - p")
-    window.addstr(5, 2, "Quit   - q")
+    window.addstr(1, 2, "Move    - ← ↓ →")
+    window.addstr(2, 2, "Drop    - space")
+    window.addstr(3, 2, "Rotate  - ↑")
+    window.addstr(4, 2, "Pause   - p")
+    window.addstr(5, 2, "Quit    - q")
 
     window.refresh()
 
@@ -192,9 +192,6 @@ if __name__ == "__main__":
 
         draw_game_window(game_window)
         draw_help_window(help_window)
-
-        # screen.clear()
-        # screen.refresh()
 
         quit_game = False
 

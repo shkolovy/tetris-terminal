@@ -64,20 +64,20 @@ import math
 import random
 
 block_shapes = [
-    # t block
+    # T Block
     [[0, 1, 0],
      [1, 1, 1]],
-    # l block
+    # L Block
     [[1, 0],
      [1, 0],
      [1, 1]],
-    # s block
+    # S Block
     [[0, 1, 1],
      [1, 1, 0]],
-    # o block
+    # O Block
     [[1, 1],
      [1, 1]],
-    # i block
+    # I Block
     [[1], [1], [1], [1]]
 ]
 
@@ -95,6 +95,10 @@ class Board:
         self.next_block = None
 
         self.game_over = False
+        self.score = 0
+        self.lines = 0
+        self.best_score = self._get_best_score()
+        self.level = 1
 
     def start(self):
         """Start game"""
@@ -106,8 +110,17 @@ class Board:
         self.next_block = None
 
         self.game_over = False
-
+        self.score = 0
+        self.lines = 0
+        self.level = 1
         self._place_new_block()
+
+    def _save_best_score(self):
+        pass
+
+    @staticmethod
+    def _get_best_score():
+        return 300
 
     def is_game_over(self):
         """Is game over"""
@@ -159,11 +172,13 @@ class Board:
             self.current_block = self.next_block
             self.next_block = self._get_new_block()
 
-        col_pos = math.ceil((self.width - self.current_block.size[1]) / 2)
+        col_pos = math.floor((self.width - self.current_block.size[1]) / 2)
         self.current_block_pos = [0, col_pos]
 
         if self._check_overlapping(self.current_block_pos):
             self.game_over = True
+            if self.best_score < self.score:
+                self._save_best_score()
 
     def _land_block(self):
         """Put block to the board and generate a new one"""
@@ -173,6 +188,8 @@ class Board:
                 if self.current_block.shape[row][col] == 1:
                     self.board[self.current_block_pos[0] + row][self.current_block_pos[1] + col] = 1
 
+        self.score += 5
+
     def _burn(self):
         """Remove matched lines"""
 
@@ -181,6 +198,10 @@ class Board:
                 for r in range(row, 0, -1):
                     self.board[r] = self.board[r - 1]
                 self.board[0] = [0 for _ in range(self.width)]
+                self.score += 100
+                self.lines += 1
+                if self.lines % 10 == 0:
+                    self.level += 1
 
     def _check_overlapping(self, pos):
         """If current block overlaps any other on the board"""
