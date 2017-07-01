@@ -62,6 +62,9 @@
 
 import math
 import random
+import os
+
+BEST_SCORE_FILE_NAME = "best_score"
 
 block_shapes = [
     # T Block
@@ -113,16 +116,9 @@ class Board:
         self.score = 0
         self.lines = 0
         self.level = 1
-        self.best_score = self._get_best_score()
+        self.best_score = self._read_best_score()
 
         self._place_new_block()
-
-    def _save_best_score(self):
-        pass
-
-    @staticmethod
-    def _get_best_score():
-        return 300
 
     def is_game_over(self):
         """Is game over"""
@@ -179,8 +175,9 @@ class Board:
 
         if self._check_overlapping(self.current_block_pos):
             self.game_over = True
-            if self.best_score < self.score:
-                self._save_best_score()
+            self._save_best_score()
+        else:
+            self.score += 5
 
     def _land_block(self):
         """Put block to the board and generate a new one"""
@@ -189,8 +186,6 @@ class Board:
             for col in range(self.current_block.size[1]):
                 if self.current_block.shape[row][col] == 1:
                     self.board[self.current_block_pos[0] + row][self.current_block_pos[1] + col] = 1
-
-        self.score += 5
 
     def _burn(self):
         """Remove matched lines"""
@@ -223,6 +218,22 @@ class Board:
             return False
 
         return not self._check_overlapping(pos)
+
+    def _save_best_score(self):
+        """Save best score to file"""
+
+        if self.best_score < self.score:
+            with open(BEST_SCORE_FILE_NAME, "w") as file:
+                file.write(str(self.score))
+
+    @staticmethod
+    def _read_best_score():
+        """Read best score from file"""
+
+        if os.path.exists(f"./{BEST_SCORE_FILE_NAME}"):
+            with open(BEST_SCORE_FILE_NAME) as file:
+                return int(file.read())
+        return 0
 
     @staticmethod
     def _get_new_block():

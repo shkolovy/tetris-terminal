@@ -98,28 +98,28 @@ def draw_game_window(window):
 def draw_status_window(window):
     """Draw status window"""
 
-    # if game_board.is_game_over():
-    #     return
-    #
-    # # hack: avoid clearing (blinking)
-    # for row in range(1, STATUS_WINDOW_HEIGHT - 1):
-    #     window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
-    #
-    # window.border()
-    #
-    # window.addstr(1, 2, f"Score: {game_board.score}")
-    # window.addstr(2, 2, f"Lines: {game_board.lines}")
-    # window.addstr(3, 2, f"Level: {game_board.level}")
-    # window.addstr(4, 2, f"Best Score:{game_board.best_score}")
-    #
-    # start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
-    #
-    # for row in range(game_board.next_block.size[0]):
-    #     for col in range(game_board.next_block.size[1]):
-    #         if game_board.next_block.shape[row][col] == 1:
-    #             window.addstr(6 + row, start_col + 2 * col, "  ", curses.color_pair(game_board.next_block.color))
+    if game_board.is_game_over():
+        return
 
-    # window.refresh()
+    # hack: avoid clearing (blinking)
+    for row in range(1, STATUS_WINDOW_HEIGHT - 1):
+        window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
+
+    window.border()
+
+    window.addstr(1, 2, f"Score: {game_board.score}")
+    window.addstr(2, 2, f"Lines: {game_board.lines}")
+    window.addstr(3, 2, f"Level: {game_board.level}")
+    window.addstr(4, 2, f"Best Score:{game_board.best_score}")
+
+    start_col = int(STATUS_WINDOW_WIDTH / 2 - game_board.next_block.size[1])
+
+    for row in range(game_board.next_block.size[0]):
+        for col in range(game_board.next_block.size[1]):
+            if game_board.next_block.shape[row][col] == 1:
+                window.addstr(6 + row, start_col + 2 * col, "  ", curses.color_pair(game_board.next_block.color))
+
+    window.refresh()
     pass
 
 def draw_help_window():
@@ -193,8 +193,6 @@ if __name__ == "__main__":
         quit_game = False
 
         while not quit_game:
-            draw_status_window(status_window)
-
             key_event = game_window.getch()
 
             if key_event == ord("q"):
@@ -225,6 +223,6 @@ if __name__ == "__main__":
                     game_window.nodelay(True)
 
             draw_game_window(game_window)
-
+            draw_status_window(status_window)
     finally:
         curses.endwin()
