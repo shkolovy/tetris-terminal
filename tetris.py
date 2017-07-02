@@ -111,8 +111,8 @@ def draw_status_window(window):
         window.addstr(row, 2, "".rjust(STATUS_WINDOW_WIDTH - 3, " "))
 
     window.border()
-    import random
-    window.addstr(1, 2, f"Score: {game_board.score} {random.randint(1,10)}")
+
+    window.addstr(1, 2, f"Score: {game_board.score}")
     window.addstr(2, 2, f"Lines: {game_board.lines}")
     window.addstr(3, 2, f"Level: {game_board.level}")
     window.addstr(4, 2, f"Best Score:{game_board.best_score}")
