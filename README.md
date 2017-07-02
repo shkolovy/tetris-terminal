@@ -3,8 +3,6 @@
 Classic version of tile-matching puzzle video game made in Python3 and
 courses
 
-
-**On Mac Terminal**
 ![ScreenShot](https://raw.githubusercontent.com/shkolovy/tetris-terminal/master/screenshots/game.png)
 
 **Controls**
