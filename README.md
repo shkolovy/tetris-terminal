@@ -1,16 +1,25 @@
 # Tetris in terminal
 
-Classic version of tile-matching puzzle video game made in Python3 and 
+Classic version of tile-matching puzzle video game made in Python3 and
 courses
 
 
-**Main Menu**
-![ScreenShot](https://raw.githubusercontent.com/shkolovy/8puzzle-terminal/master/screenshots/8puzzle-terminal-main.png)
+**On Mac Terminal**
+![ScreenShot](https://raw.githubusercontent.com/shkolovy/tetris-terminal/master/screenshots/game.png)
 
+**Controls**
+- Move     - ← ↓ →
+- Drop     - Space
+- Rotate   - ↑
+- Pause    - p
+- Quit     - q
+- New Game - Enter
 
-**The Game**
-![ScreenShot](https://raw.githubusercontent.com/shkolovy/8puzzle-terminal/master/screenshots/8puzzle-terminal-game.png)
+**Points**
+- **5** for each new block
+- **100** for each burnt line
+- best score saved in file *best_score*
 
+**Levels**
+- each 10 burnt lines speed will be increased
 
-**About**
-![ScreenShot](https://raw.githubusercontent.com/shkolovy/8puzzle-terminal/master/screenshots/8puzzle-terminal-about.png)
