@@ -24,7 +24,7 @@ courses
 
 #### Play on mac
 
-download tetris executable file and add *path* to the file .bash_profile
+build it `PyInstaller tetris.py --onefile` and add *path* to the .bash_profile
 
 `export PATH="/Users/your_name/tetris-terminal:$PATH"`
 
