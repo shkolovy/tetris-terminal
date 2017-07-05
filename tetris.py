@@ -204,6 +204,12 @@ if __name__ == "__main__":
         while not quit_game:
             key_event = game_window.getch()
 
+            # hack: redraw it on resize
+            if key_event == curses.KEY_RESIZE:
+                draw_footer()
+                draw_help_window()
+                draw_game_window(game_window)
+
             if key_event == ord("q"):
                 quit_game = True
 
