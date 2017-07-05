@@ -21,3 +21,11 @@ courses
 **Levels**
 - each 10 burnt lines speed will be increased
 
+
+#### Play on mac
+
+download tetris executable file and add *path* to the file .bash_profile
+
+`export PATH="/Users/your_name/tetris-terminal:$PATH"`
+
+type in terminal and play :) `>tetris`
